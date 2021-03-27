@@ -5,6 +5,9 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:toast/toast.dart';
 
 class AddJobPage extends StatefulWidget {
+  final List list;
+  final int index;
+  AddJobPage({this.list, this.index});
   @override
   _AddJobPageState createState() => _AddJobPageState();
 }
@@ -145,7 +148,7 @@ class _AddJobPageState extends State<AddJobPage> {
                         GestureDetector(
                           onTap: () {
                             _addjob();
-                            Navigator.of(context).pushNamed('/managejob');
+                            Navigator.of(context).pushNamed("/managejob");
                           },
                           child: Container(
                             height: 40.0,

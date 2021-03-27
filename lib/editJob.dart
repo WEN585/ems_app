@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:ems_app/managejob.dart';
+import 'package:http/http.dart' as http;
+import 'package:progress_dialog/progress_dialog.dart';
+import 'package:toast/toast.dart';
 
 class EditJobPage extends StatefulWidget {
+  final List list;
+  final int index;
+  EditJobPage({this.list, this.index});
   @override
   _EditJobPageState createState() => _EditJobPageState();
 }
 
 class _EditJobPageState extends State<EditJobPage> {
+  TextEditingController _jobname_controller = TextEditingController();
+  TextEditingController _jobdes_controller = TextEditingController();
+  TextEditingController _wagesperhour_controller = TextEditingController();
+  TextEditingController _duration_controller = TextEditingController();
+  TextEditingController _workhour_controller = TextEditingController();
+  TextEditingController _numberofworkers_controller = TextEditingController();
+
   Future<bool> _goBack() async {
     Navigator.of(context).pop(true);
     return false;
@@ -56,6 +69,7 @@ class _EditJobPageState extends State<EditJobPage> {
                           padding: EdgeInsets.symmetric(
                               horizontal: 16.0, vertical: 4.0),
                           child: TextFormField(
+                            controller: _jobname_controller,
                             decoration: InputDecoration(
                                 labelText: "Job Name",
                                 filled: true,
@@ -68,11 +82,12 @@ class _EditJobPageState extends State<EditJobPage> {
                           padding: EdgeInsets.symmetric(
                               horizontal: 16.0, vertical: 4.0),
                           child: TextFormField(
+                            controller: _jobdes_controller,
                             textInputAction: TextInputAction.done,
                             minLines: 2,
                             maxLines: 4,
                             decoration: InputDecoration(
-                                labelText: "JobDescription",
+                                labelText: "Job Description",
                                 border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10))),
                           ),
@@ -81,6 +96,7 @@ class _EditJobPageState extends State<EditJobPage> {
                           padding: EdgeInsets.symmetric(
                               horizontal: 16.0, vertical: 4.0),
                           child: TextFormField(
+                            controller: _wagesperhour_controller,
                             decoration: InputDecoration(
                                 labelText: "Wages Per Hour",
                                 filled: true,
@@ -93,6 +109,7 @@ class _EditJobPageState extends State<EditJobPage> {
                           padding: EdgeInsets.symmetric(
                               horizontal: 16.0, vertical: 4.0),
                           child: TextFormField(
+                            controller: _duration_controller,
                             decoration: InputDecoration(
                                 labelText: "Duration",
                                 filled: true,
@@ -105,6 +122,7 @@ class _EditJobPageState extends State<EditJobPage> {
                           padding: EdgeInsets.symmetric(
                               horizontal: 16.0, vertical: 4.0),
                           child: TextFormField(
+                            controller: _workhour_controller,
                             decoration: InputDecoration(
                                 labelText: "Working Hours",
                                 filled: true,
@@ -117,6 +135,7 @@ class _EditJobPageState extends State<EditJobPage> {
                           padding: EdgeInsets.symmetric(
                               horizontal: 16.0, vertical: 4.0),
                           child: TextFormField(
+                            controller: _numberofworkers_controller,
                             decoration: InputDecoration(
                                 labelText: "Number of Workers Needed",
                                 filled: true,
@@ -127,6 +146,17 @@ class _EditJobPageState extends State<EditJobPage> {
                         ),
                         SizedBox(height: 20.0),
                         GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _editjob();
+                            });
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ManageJobPage(),
+                              ),
+                            );
+                          },
                           child: Container(
                             height: 40.0,
                             child: Material(
@@ -135,7 +165,7 @@ class _EditJobPageState extends State<EditJobPage> {
                               color: Colors.red,
                               elevation: 7.0,
                               child: Center(
-                                child: Text('Update',
+                                child: Text('Edit',
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 20.0,
@@ -157,15 +187,10 @@ class _EditJobPageState extends State<EditJobPage> {
                               child: InkWell(
                                 onTap: () {
                                   Navigator.of(context).pop();
-                                  Navigator.push(
-                                      context,
-                                      new MaterialPageRoute(
-                                          builder: (BuildContext context) =>
-                                              new ManageJobPage()));
                                 },
                                 child: Center(
                                   child: Text(
-                                    'Delete',
+                                    'Cancel',
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 20.0,
@@ -187,5 +212,62 @@ class _EditJobPageState extends State<EditJobPage> {
         ),
       ),
     );
+  }
+
+  void _editjob() async {
+    String _jobname = _jobname_controller.text;
+    String _jobdes = _jobdes_controller.text;
+    String _wagesperhour = _wagesperhour_controller.text;
+    String _duration = _duration_controller.text;
+    String _workhour = _workhour_controller.text;
+    String _numberofworkers = _numberofworkers_controller.text;
+
+    ProgressDialog pr = ProgressDialog(context,
+        type: ProgressDialogType.Normal, isDismissible: false);
+    pr.style(message: "Editing Job...");
+    await pr.show();
+    http.post("http://icebeary.com/EMS/editjob.php", body: {
+      'id': widget.list[widget.index]['id'],
+      "jobname": _jobname,
+      "jobdes": _jobdes,
+      "wagesperhour": _wagesperhour,
+      "duration": _duration,
+      "workhour": _workhour,
+      "numberofworkers": _numberofworkers,
+    }).then((res) {
+      print(res.body);
+      if (res.body == "success") {
+        Toast.show(
+          "Edit Job Success.",
+          context,
+          duration: 2,
+          gravity: Toast.BOTTOM,
+        );
+        Navigator.of(context).pop();
+      } else {
+        Toast.show(
+          "Edit Job failed",
+          context,
+          duration: 2,
+          gravity: Toast.BOTTOM,
+        );
+      }
+    }).catchError((err) {
+      print(err);
+    });
+    await pr.hide();
+  }
+
+  void initState() {
+    super.initState();
+    if (widget.index != null) {
+      _jobdes_controller.text = widget.list[widget.index]['jobname'];
+      _jobdes_controller.text = widget.list[widget.index]['jobdes'];
+      _wagesperhour_controller.text = widget.list[widget.index]['wagesperhour'];
+      _duration_controller.text = widget.list[widget.index]['duration'];
+      _workhour_controller.text = widget.list[widget.index]['workhour'];
+      _numberofworkers_controller.text =
+          widget.list[widget.index]['numberofworkers'];
+    }
   }
 }
