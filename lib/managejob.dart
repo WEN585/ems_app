@@ -55,50 +55,6 @@ class _ManageJobPageState extends State<ManageJobPage> {
           ],
         ),
       ),
-      body: FutureBuilder(
-        future: getData(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) print(snapshot.error);
-          return snapshot.hasData
-              ? ListView.builder(
-                  itemCount: snapshot.data.length,
-                  itemBuilder: (context, index) {
-                    List list = snapshot.data;
-                    return ListTile(
-                      leading: GestureDetector(
-                        child: Icon(Icons.edit),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => EditJobPage(
-                                list: list,
-                                index: index,
-                              ),
-                            ),
-                          );
-                          debugPrint('Edit Clicked');
-                        },
-                      ),
-                      title: Text(list[index]['jobname']),
-                      subtitle: Text(list[index]['jobdes']),
-                      trailing: GestureDetector(
-                        child: Icon(Icons.delete),
-                        onTap: () {
-                          setState(() {
-                            var url = 'http://icebeary.com/EMS/deletejob.php';
-                            http.post(url, body: {
-                              'id': list[index]['id'],
-                            });
-                          });
-                          debugPrint('delete Clicked');
-                        },
-                      ),
-                    );
-                  })
-              : CircularProgressIndicator();
-        },
-      ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         backgroundColor: Colors.green,
